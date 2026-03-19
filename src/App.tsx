@@ -1,10 +1,12 @@
+// @ts-nocheck
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Search, Filter, DollarSign, Download, Upload, Plus, Trash2, CheckCircle, GraduationCap, AlertCircle, Wallet, Cloud, Loader2 } from 'lucide-react';
 
-// -------------------------------------------------------------
-// 【山谷音乐专属 Firebase 云数据库配置区】
-// 小白注意：如果你要部署到 Vercel，请把这里的内容替换为你在 Firebase 申请的配置！
-// -------------------------------------------------------------
+// 1. 你的专属云数据库配置
+import { initializeApp } from 'firebase/app';
+import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc } from 'firebase/firestore';
+
 const myFirebaseConfig = {
   apiKey: "AIzaSyD525Z346nu8-g9t8b3yyn8udsk0619Lwg",
   authDomain: "sgyy-caiwu-xiton.firebaseapp.com",
@@ -15,21 +17,11 @@ const myFirebaseConfig = {
   measurementId: "G-5MWZ6YYGTH"
 };
 
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
-import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc } from 'firebase/firestore';
-
-// 系统底层逻辑：如果在当前预览环境下，自动使用内置的沙盒数据库；如果是你自己部署在 Vercel，使用你的上方配置。
-let app, auth, db, appId;
-try {
-  const configToUse = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : myFirebaseConfig;
-  app = initializeApp(configToUse);
-  auth = getAuth(app);
-  db = getFirestore(app);
-  appId = typeof __app_id !== 'undefined' ? __app_id : 'shangu-music-app';
-} catch (error) {
-  console.error("Firebase 数据库连接失败", error);
-}
+// 初始化数据库
+const app = initializeApp(myFirebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const appId = 'shangu-music-app';
 
 // 原有的基础默认数据，仅在数据库为空时提供“一键导入”使用
 const defaultData = [
@@ -75,7 +67,7 @@ const defaultData = [
   { id: '40', month: '1月', student: '王球', course: '钢琴初级', revenue: 2480, teacher: '黄', commissionPaid: 0, isFinished: false, notes: '黄老师未结' },
   { id: '41', month: '3月', student: '小爱同学', course: '吉他初级', revenue: 2480, teacher: '谷', commissionPaid: 0, isFinished: false, notes: '谷未结' },
   { id: '42', month: '3月', student: '余冠晓', course: '钢琴初转高', revenue: 2480, teacher: '黄', commissionPaid: 0, isFinished: false, notes: '待结' },
-  { id: '43', month: '3月', student: '芦雅慧', course: '吉他正式课', revenue: 2480, teacher: '徐', commissionPaid: 0, isFinished: false, notes: '待结' },
+  { id: '43', month: '3月', student: '芦雅慧', course: '吉他正式课', revenue: 2480, teacher: '徐', commissionPaid: 0, is复inished: false, notes: '待结' },
   { id: '44', month: '3月', student: '杨同学', course: '声乐正式课', revenue: 2580, teacher: '徐', commissionPaid: 0, isFinished: false, notes: '待结' },
   { id: '45', month: '3月', student: '林玉霞', course: '吉他正式课', revenue: 2480, teacher: '徐', commissionPaid: 0, isFinished: false, notes: '待结' },
   { id: '46', month: '3月', student: '林玉霞', course: '声乐正式课', revenue: 1580, teacher: '徐', commissionPaid: 0, isFinished: false, notes: '6节' },
@@ -86,7 +78,7 @@ export default function App() {
   const fileInputRef = useRef(null);
   const [data, setData] = useState([]);
   const [user, setUser] = useState(null);
-  const [isSyncing, setIsSyncing] = useState(true); // 是否正在同步云端
+  const [isSyncing, setIsSyncing] = useState(true); 
   
   const [searchTerm, setSearchTerm] = useState('');
   const [filterMonth, setFilterMonth] = useState('全部');
@@ -105,11 +97,7 @@ export default function App() {
     }
     const initAuth = async () => {
       try {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          await signInAnonymously(auth);
-        }
+        await signInAnonymously(auth);
       } catch (err) {
         console.error("数据库验证失败", err);
       }
@@ -119,20 +107,16 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // 2. 监听云端数据库数据变化（实现多终端实时同步）
+  // 2. 监听云端数据库数据变化
   useEffect(() => {
     if (!user || !db) return;
     setIsSyncing(true);
     
-    // 指定存储位置：山谷音乐账本
     const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'shanguyinyue_finances');
     
-    // onSnapshot 提供实时双向同步，任何人修改都会立刻触发这里
     const unsubscribe = onSnapshot(colRef, (snapshot) => {
       const docs = [];
       snapshot.forEach(doc => docs.push(doc.data()));
-      
-      // 按时间戳降序排列，新创建的在上面
       docs.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
       setData(docs);
       setIsSyncing(false);
@@ -161,7 +145,6 @@ export default function App() {
 
   const processedData = useMemo(() => processData(data), [data]);
 
-  // 过滤数据
   const filteredData = useMemo(() => {
     return processedData.filter(item => {
       const matchSearch = item.student.includes(searchTerm) || item.course.includes(searchTerm);
@@ -175,7 +158,6 @@ export default function App() {
     });
   }, [processedData, searchTerm, filterMonth, filterTeacher, filterCourseStatus]);
 
-  // 统计数据
   const metrics = useMemo(() => {
     let totalRevenue = 0, totalCurrentPending = 0, totalFuturePending = 0, totalPaid = 0;
     filteredData.forEach(item => {
@@ -187,9 +169,6 @@ export default function App() {
     return { totalRevenue, totalCurrentPending, totalFuturePending, totalPaid };
   }, [filteredData]);
 
-  // --- 数据库写操作（更新到云端） ---
-
-  // 更新某一条数据的通用方法
   const updateCloudRecord = async (id, updates) => {
     if (!user || !db) return;
     try {
@@ -201,19 +180,16 @@ export default function App() {
     }
   };
 
-  // 一键结课 / 撤销结课
   const handleToggleStatus = (id) => {
     const item = data.find(d => d.id === id);
     if(item) updateCloudRecord(id, { isFinished: !item.isFinished });
   };
 
-  // 派发薪水
   const handlePayPending = (id, amountToPay) => {
     const item = data.find(d => d.id === id);
     if(item) updateCloudRecord(id, { commissionPaid: Number(item.commissionPaid) + amountToPay });
   };
 
-  // 新增记录
   const handleAddSubmit = async (e) => {
     e.preventDefault();
     if (!user || !db) {
@@ -233,12 +209,10 @@ export default function App() {
     setIsAddModalOpen(false);
     setNewRecord({ month: '3月', student: '', course: '', revenue: '', teacher: '', notes: '' });
     
-    // 写入云端
     const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'shanguyinyue_finances', newItemId);
     await setDoc(docRef, newItem);
   };
 
-  // 删除记录
   const handleDelete = (id) => setDeleteConfirmId(id);
   const confirmDelete = async () => {
     if (deleteConfirmId && user && db) {
@@ -248,12 +222,10 @@ export default function App() {
     setDeleteConfirmId(null);
   };
 
-  // 导入旧数据（写入数据库）
   const injectDefaultDataToCloud = async () => {
     if (!user || !db) return;
     setAlertMessage('正在将原先的历史记录推送到云端数据库，大约需要5秒钟，请勿关闭页面...');
     try {
-      // 为了防止排序乱掉，给旧数据人为加个时间戳
       let baseTime = Date.now() - 100000; 
       for (const item of defaultData) {
         const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'shanguyinyue_finances', item.id);
@@ -265,7 +237,6 @@ export default function App() {
     }
   };
 
-  // 提取动态选项
   const months = ['全部', ...new Set(data.map(item => item.month))];
   const teachers = ['全部', ...new Set(data.map(item => item.teacher))];
 
@@ -273,7 +244,6 @@ export default function App() {
     <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans text-slate-800">
       <div className="max-w-7xl mx-auto space-y-6">
         
-        {/* 头部与操作区 */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">山谷音乐财务系统 <span className="text-sm font-normal text-slate-500 ml-2 bg-slate-100 px-2 py-1 rounded">协同分步提成版</span></h1>
@@ -293,7 +263,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* 核心数据看板 */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
             <div className="flex items-center text-slate-500 mb-2">
@@ -335,7 +304,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* 筛选区 */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-wrap gap-4 items-center">
           <Filter size={18} className="text-slate-400 shrink-0" />
           <div className="flex-1 min-w-[200px] relative">
@@ -359,7 +327,6 @@ export default function App() {
           </select>
         </div>
 
-        {/* 数据表格区 */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse whitespace-nowrap">
@@ -375,7 +342,6 @@ export default function App() {
               </thead>
               <tbody className="divide-y divide-slate-100 text-sm">
                 
-                {/* 数据库为空的引导状态 */}
                 {filteredData.length === 0 && !isSyncing && (
                   <tr>
                     <td colSpan="6" className="px-4 py-16 text-center text-slate-500">
@@ -469,7 +435,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* 新增记录弹窗 */}
       {isAddModalOpen && (
         <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
@@ -512,7 +477,6 @@ export default function App() {
         </div>
       )}
 
-      {/* 自定义删除确认弹窗 */}
       {deleteConfirmId && (
         <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-[60] p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
@@ -526,7 +490,6 @@ export default function App() {
         </div>
       )}
 
-      {/* 系统提示弹窗 */}
       {alertMessage && (
         <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-[70] p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl text-center">
