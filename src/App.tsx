@@ -25,54 +25,72 @@ const appId = 'shangu-music-app';
 
 // 原有的基础默认数据，仅在数据库为空时提供“一键导入”使用
 const defaultData = [
-  { id: '1', month: '10月', student: '贺同学', course: '未写明', revenue: 2480, teacher: '郭', commissionPaid: 496, isFinished: false, notes: '已付全款' },
-  { id: '2', month: '10月', student: '杨同学', course: '未写明', revenue: 1000, teacher: '郭', commissionPaid: 400, isFinished: true, notes: '已付1000元' },
-  { id: '3', month: '10月', student: '郭同学', course: '架子鼓', revenue: 2480, teacher: '刘', commissionPaid: 494, isFinished: false, notes: '已付全款(记录已结494)' },
-  { id: '4', month: '10月', student: '李同学', course: '钢琴', revenue: 2200, teacher: '郭', commissionPaid: 880, isFinished: true, notes: '已付全款' },
-  { id: '5', month: '10月', student: '唐同学', course: '吉他', revenue: 2480, teacher: '郭', commissionPaid: 992, isFinished: true, notes: '郭结496+496' },
-  { id: '6', month: '11月', student: '杜同学', course: '吉他', revenue: 2480, teacher: '郭', commissionPaid: 496, isFinished: false, notes: '已付全款' },
-  { id: '7', month: '11月', student: '婷同学', course: '声乐', revenue: 4680, teacher: '郭', commissionPaid: 936, isFinished: false, notes: '20+2送节' },
-  { id: '8', month: '11月', student: '双王同学', course: '声乐', revenue: 3350, teacher: '郭', commissionPaid: 1340, isFinished: false, notes: '40%全结清(提前预结)' },
-  { id: '9', month: '11月', student: '晓东同学', course: '声乐', revenue: 300, teacher: '郭', commissionPaid: 120, isFinished: true, notes: '300定金已结课' },
-  { id: '10', month: '11月', student: '成同学', course: '钢琴初级', revenue: 2480, teacher: '郭', commissionPaid: 992, isFinished: true, notes: '已付2480' },
-  { id: '11', month: '11月', student: '罗同学', course: '声乐', revenue: 2580, teacher: '郭', commissionPaid: 516, isFinished: false, notes: '10节' },
-  { id: '12', month: '11月', student: '袁国翔', course: '声乐', revenue: 2580, teacher: '郭', commissionPaid: 1032, isFinished: true, notes: '已结清' },
-  { id: '13', month: '11月', student: '冬棠', course: '架子鼓初级', revenue: 2480, teacher: '钱', commissionPaid: 496, isFinished: false, notes: '仅白天' },
-  { id: '14', month: '11月', student: '杜同学', course: '钢琴初转高', revenue: 2480, teacher: '郭', commissionPaid: 496, isFinished: false, notes: '待补1800' },
-  { id: '15', month: '11月', student: '伍同学', course: '吉他高级', revenue: 4280, teacher: '郭', commissionPaid: 856, isFinished: false, notes: '已付4280' },
-  { id: '16', month: '11月', student: '谢同学', course: '声乐', revenue: 2580, teacher: '郭', commissionPaid: 516, isFinished: false, notes: '10节' },
-  { id: '17', month: '11月', student: '江同学', course: '声乐', revenue: 2580, teacher: '郭', commissionPaid: 516, isFinished: false, notes: '10节' },
-  { id: '18', month: '11月', student: '郑同学', course: '声乐', revenue: 2580, teacher: '郭', commissionPaid: 516, isFinished: false, notes: '10节' },
-  { id: '19', month: '12月', student: '叶同学', course: '声乐', revenue: 2580, teacher: '郭', commissionPaid: 516, isFinished: false, notes: '10节' },
-  { id: '20', month: '12月', student: '刘同学', course: '钢琴初级', revenue: 2480, teacher: '黄', commissionPaid: 992, isFinished: true, notes: '已结课' },
-  { id: '21', month: '12月', student: '佩佩同学', course: '声乐', revenue: 2580, teacher: '郭', commissionPaid: 516, isFinished: false, notes: '10节' },
-  { id: '22', month: '12月', student: '佩佩同学', course: '架子鼓初级', revenue: 2480, teacher: '钱', commissionPaid: 496, isFinished: false, notes: '全款' },
-  { id: '23', month: '12月', student: '潘同学', course: '架子鼓高级', revenue: 4280, teacher: '钱', commissionPaid: 856, isFinished: false, notes: '全款' },
-  { id: '24', month: '12月', student: '苏同学', course: '架子鼓初级', revenue: 2480, teacher: '钱', commissionPaid: 496, isFinished: false, notes: '全款' },
-  { id: '25', month: '12月', student: '余同学', course: '钢琴初级', revenue: 2480, teacher: '黄', commissionPaid: 0, isFinished: false, notes: '黄老师未结' },
-  { id: '26', month: '12月', student: '莫同学', course: '即兴伴奏初级', revenue: 2480, teacher: '郭', commissionPaid: 496, isFinished: false, notes: '全款' },
-  { id: '27', month: '12月', student: '冬青同学', course: '声乐(一二)', revenue: 3470, teacher: '郭', commissionPaid: 694, isFinished: false, notes: '赠送2节' },
-  { id: '28', month: '12月', student: '刘雨笠', course: '钢琴初级', revenue: 2480, teacher: '黄', commissionPaid: 496, isFinished: false, notes: '全款' },
-  { id: '29', month: '12月', student: '梁同学', course: '声乐', revenue: 500, teacher: '郭', commissionPaid: 0, isFinished: false, notes: '500定金未结' },
-  { id: '30', month: '12月', student: '蟹同学', course: '声乐', revenue: 800, teacher: '郭', commissionPaid: 320, isFinished: true, notes: '800定金已结课' },
-  { id: '31', month: '12月', student: '思思同学', course: '声乐+钢琴', revenue: 4880, teacher: '郭', commissionPaid: 1952, isFinished: true, notes: '已结课' },
-  { id: '32', month: '1月', student: '小白同学', course: '声乐', revenue: 2480, teacher: '徐', commissionPaid: 0, isFinished: false, notes: '徐老师待结' },
-  { id: '33', month: '1月', student: '李虾仁同学', course: '声乐', revenue: 2580, teacher: '郭', commissionPaid: 516, isFinished: false, notes: '10节' },
-  { id: '34', month: '1月', student: '潘诚同学', course: '声乐', revenue: 300, teacher: '郭', commissionPaid: 120, isFinished: true, notes: '定金已结课' },
-  { id: '35', month: '1月', student: '叶同学', course: '钢琴', revenue: 2480, teacher: '郭', commissionPaid: 496, isFinished: false, notes: '全款' },
-  { id: '36', month: '1月', student: '潘诚同学', course: '声乐', revenue: 2280, teacher: '郭', commissionPaid: 456, isFinished: false, notes: '全款' },
-  { id: '37', month: '1月', student: '蟹同学', course: '声乐', revenue: 1680, teacher: '郭', commissionPaid: 336, isFinished: false, notes: '已结336' },
-  { id: '38', month: '1月', student: '吴慧婷', course: '吉他初级', revenue: 2280, teacher: '郭', commissionPaid: 456, isFinished: false, notes: '全款' },
-  { id: '39', month: '1月', student: '王津越', course: '钢琴初级', revenue: 2480, teacher: '郭', commissionPaid: 496, isFinished: false, notes: '全款' },
-  { id: '40', month: '1月', student: '王球', course: '钢琴初级', revenue: 2480, teacher: '黄', commissionPaid: 0, isFinished: false, notes: '黄老师未结' },
-  { id: '41', month: '3月', student: '小爱同学', course: '吉他初级', revenue: 2480, teacher: '谷', commissionPaid: 0, isFinished: false, notes: '谷未结' },
-  { id: '42', month: '3月', student: '余冠晓', course: '钢琴初转高', revenue: 2480, teacher: '黄', commissionPaid: 0, isFinished: false, notes: '待结' },
-  { id: '43', month: '3月', student: '芦雅慧', course: '吉他正式课', revenue: 2480, teacher: '徐', commissionPaid: 0, is复inished: false, notes: '待结' },
-  { id: '44', month: '3月', student: '杨同学', course: '声乐正式课', revenue: 2580, teacher: '徐', commissionPaid: 0, isFinished: false, notes: '待结' },
-  { id: '45', month: '3月', student: '林玉霞', course: '吉他正式课', revenue: 2480, teacher: '徐', commissionPaid: 0, isFinished: false, notes: '待结' },
-  { id: '46', month: '3月', student: '林玉霞', course: '声乐正式课', revenue: 1580, teacher: '徐', commissionPaid: 0, isFinished: false, notes: '6节' },
-  { id: '47', month: '3月', student: '李涵', course: '声乐吉他', revenue: 5060, teacher: '徐', commissionPaid: 0, isFinished: false, notes: '待结' },
+  { id: '1', month: '10月', student: '贺同学', course: '未写明', revenue: 2480, teacher: '郭', commissionPaid: 496, isFinished: false, notes: '已付全款', category: '乐器初级' },
+  { id: '2', month: '10月', student: '杨同学', course: '未写明', revenue: 1000, teacher: '郭', commissionPaid: 400, isFinished: true, notes: '已付1000元', category: '乐器初级' },
+  { id: '3', month: '10月', student: '郭同学', course: '架子鼓', revenue: 2480, teacher: '刘', commissionPaid: 494, isFinished: false, notes: '已付全款(记录已结494)', category: '乐器初级' },
+  { id: '4', month: '10月', student: '李同学', course: '钢琴', revenue: 2200, teacher: '郭', commissionPaid: 880, isFinished: true, notes: '已付全款', category: '乐器初级' },
+  { id: '5', month: '10月', student: '唐同学', course: '吉他', revenue: 2480, teacher: '郭', commissionPaid: 992, isFinished: true, notes: '郭结496+496', category: '乐器初级' },
+  { id: '6', month: '11月', student: '杜同学', course: '吉他', revenue: 2480, teacher: '郭', commissionPaid: 496, isFinished: false, notes: '已付全款', category: '乐器初级' },
+  { id: '7', month: '11月', student: '婷同学', course: '声乐', revenue: 4680, teacher: '郭', commissionPaid: 936, isFinished: false, notes: '20+2送节', category: '声乐高级' },
+  { id: '8', month: '11月', student: '双王同学', course: '声乐', revenue: 3350, teacher: '郭', commissionPaid: 1340, isFinished: false, notes: '40%全结清(提前预结)', category: '声乐高级' },
+  { id: '9', month: '11月', student: '晓东同学', course: '声乐', revenue: 300, teacher: '郭', commissionPaid: 120, isFinished: true, notes: '300定金已结课', category: '声乐初级' },
+  { id: '10', month: '11月', student: '成同学', course: '钢琴初级', revenue: 2480, teacher: '郭', commissionPaid: 992, isFinished: true, notes: '已付2480', category: '乐器初级' },
+  { id: '11', month: '11月', student: '罗同学', course: '声乐', revenue: 2580, teacher: '郭', commissionPaid: 516, isFinished: false, notes: '10节', category: '声乐初级' },
+  { id: '12', month: '11月', student: '袁国翔', course: '声乐', revenue: 2580, teacher: '郭', commissionPaid: 1032, isFinished: true, notes: '已结清', category: '声乐初级' },
+  { id: '13', month: '11月', student: '冬棠', course: '架子鼓初级', revenue: 2480, teacher: '钱', commissionPaid: 496, isFinished: false, notes: '仅白天', category: '乐器初级' },
+  { id: '14', month: '11月', student: '杜同学', course: '钢琴初转高', revenue: 2480, teacher: '郭', commissionPaid: 496, isFinished: false, notes: '待补1800', category: '乐器高级' },
+  { id: '15', month: '11月', student: '伍同学', course: '吉他高级', revenue: 4280, teacher: '郭', commissionPaid: 856, isFinished: false, notes: '已付4280', category: '乐器高级' },
+  { id: '16', month: '11月', student: '谢同学', course: '声乐', revenue: 2580, teacher: '郭', commissionPaid: 516, isFinished: false, notes: '10节', category: '声乐初级' },
+  { id: '17', month: '11月', student: '江同学', course: '声乐', revenue: 2580, teacher: '郭', commissionPaid: 516, isFinished: false, notes: '10节', category: '声乐初级' },
+  { id: '18', month: '11月', student: '郑同学', course: '声乐', revenue: 2580, teacher: '郭', commissionPaid: 516, isFinished: false, notes: '10节', category: '声乐初级' },
+  { id: '19', month: '12月', student: '叶同学', course: '声乐', revenue: 2580, teacher: '郭', commissionPaid: 516, isFinished: false, notes: '10节', category: '声乐初级' },
+  { id: '20', month: '12月', student: '刘同学', course: '钢琴初级', revenue: 2480, teacher: '黄', commissionPaid: 992, isFinished: true, notes: '已结课', category: '乐器初级' },
+  { id: '21', month: '12月', student: '佩佩同学', course: '声乐', revenue: 2580, teacher: '郭', commissionPaid: 516, isFinished: false, notes: '10节', category: '声乐初级' },
+  { id: '22', month: '12月', student: '佩佩同学', course: '架子鼓初级', revenue: 2480, teacher: '钱', commissionPaid: 496, isFinished: false, notes: '全款', category: '乐器初级' },
+  { id: '23', month: '12月', student: '潘同学', course: '架子鼓高级', revenue: 4280, teacher: '钱', commissionPaid: 856, isFinished: false, notes: '全款', category: '乐器高级' },
+  { id: '24', month: '12月', student: '苏同学', course: '架子鼓初级', revenue: 2480, teacher: '钱', commissionPaid: 496, isFinished: false, notes: '全款', category: '乐器初级' },
+  { id: '25', month: '12月', student: '余同学', course: '钢琴初级', revenue: 2480, teacher: '黄', commissionPaid: 0, isFinished: false, notes: '黄老师未结', category: '乐器初级' },
+  { id: '26', month: '12月', student: '莫同学', course: '即兴伴奏初级', revenue: 2480, teacher: '郭', commissionPaid: 496, isFinished: false, notes: '全款', category: '乐器初级' },
+  { id: '27', month: '12月', student: '冬青同学', course: '声乐(一二)', revenue: 3470, teacher: '郭', commissionPaid: 694, isFinished: false, notes: '赠送2节', category: '声乐高级' },
+  { id: '28', month: '12月', student: '刘雨笠', course: '钢琴初级', revenue: 2480, teacher: '黄', commissionPaid: 496, isFinished: false, notes: '全款', category: '乐器初级' },
+  { id: '29', month: '12月', student: '梁同学', course: '声乐', revenue: 500, teacher: '郭', commissionPaid: 0, isFinished: false, notes: '500定金未结', category: '声乐初级' },
+  { id: '30', month: '12月', student: '蟹同学', course: '声乐', revenue: 800, teacher: '郭', commissionPaid: 320, isFinished: true, notes: '800定金已结课', category: '声乐初级' },
+  { id: '31', month: '12月', student: '思思同学', course: '声乐+钢琴', revenue: 4880, teacher: '郭', commissionPaid: 1952, isFinished: true, notes: '已结课', category: '声乐高级' },
+  { id: '32', month: '1月', student: '小白同学', course: '声乐', revenue: 2480, teacher: '徐', commissionPaid: 0, isFinished: false, notes: '徐老师待结', category: '声乐初级' },
+  { id: '33', month: '1月', student: '李虾仁同学', course: '声乐', revenue: 2580, teacher: '郭', commissionPaid: 516, isFinished: false, notes: '10节', category: '声乐初级' },
+  { id: '34', month: '1月', student: '潘诚同学', course: '声乐', revenue: 300, teacher: '郭', commissionPaid: 120, isFinished: true, notes: '定金已结课', category: '声乐初级' },
+  { id: '35', month: '1月', student: '叶同学', course: '钢琴', revenue: 2480, teacher: '郭', commissionPaid: 496, isFinished: false, notes: '全款', category: '乐器初级' },
+  { id: '36', month: '1月', student: '潘诚同学', course: '声乐', revenue: 2280, teacher: '郭', commissionPaid: 456, isFinished: false, notes: '全款', category: '声乐初级' },
+  { id: '37', month: '1月', student: '蟹同学', course: '声乐', revenue: 1680, teacher: '郭', commissionPaid: 336, isFinished: false, notes: '已结336', category: '声乐初级' },
+  { id: '38', month: '1月', student: '吴慧婷', course: '吉他初级', revenue: 2280, teacher: '郭', commissionPaid: 456, isFinished: false, notes: '全款', category: '乐器初级' },
+  { id: '39', month: '1月', student: '王津越', course: '钢琴初级', revenue: 2480, teacher: '郭', commissionPaid: 496, isFinished: false, notes: '全款', category: '乐器初级' },
+  { id: '40', month: '1月', student: '王球', course: '钢琴初级', revenue: 2480, teacher: '黄', commissionPaid: 0, isFinished: false, notes: '黄老师未结', category: '乐器初级' },
+  { id: '41', month: '3月', student: '小爱同学', course: '吉他初级', revenue: 2480, teacher: '谷', commissionPaid: 0, isFinished: false, notes: '谷未结', category: '乐器初级' },
+  { id: '42', month: '3月', student: '余冠晓', course: '钢琴初转高', revenue: 2480, teacher: '黄', commissionPaid: 0, isFinished: false, notes: '待结', category: '乐器高级' },
+  { id: '43', month: '3月', student: '芦雅慧', course: '吉他正式课', revenue: 2480, teacher: '徐', commissionPaid: 0, isFinished: false, notes: '待结', category: '乐器初级' },
+  { id: '44', month: '3月', student: '杨同学', course: '声乐正式课', revenue: 2580, teacher: '徐', commissionPaid: 0, isFinished: false, notes: '待结', category: '声乐初级' },
+  { id: '45', month: '3月', student: '林玉霞', course: '吉他正式课', revenue: 2480, teacher: '徐', commissionPaid: 0, isFinished: false, notes: '待结', category: '乐器初级' },
+  { id: '46', month: '3月', student: '林玉霞', course: '声乐正式课', revenue: 1580, teacher: '徐', commissionPaid: 0, isFinished: false, notes: '6节', category: '声乐初级' },
+  { id: '47', month: '3月', student: '李涵', course: '声乐吉他', revenue: 5060, teacher: '徐', commissionPaid: 0, isFinished: false, notes: '待结', category: '乐器初级' },
 ];
+
+// 课程类别自动识别
+const detectCategory = (courseName) => {
+  const name = courseName || '';
+  // 声乐高级：含"声乐"且（含"高级"或课程描述含高价特征）
+  if (name.includes('声乐')) {
+    if (name.includes('高级') || name.includes('一二') || name.includes('+钢琴')) return '声乐高级';
+    return '声乐初级';
+  }
+  // 乐器高级：含乐器关键词且含"高级"/"初转高"
+  const instKeywords = ['钢琴', '吉他', '架子鼓', '即兴伴奏', '小提琴', '古筝', '贝斯', '尤克里里'];
+  const isInstrument = instKeywords.some(k => name.includes(k)) || !name.includes('声乐');
+  if (isInstrument && (name.includes('高级') || name.includes('初转高') || name.includes('高'))) return '乐器高级';
+  return '乐器初级';
+};
+
+// 根据类别获取最大阶段数
+const getMaxStage = (category) => category === '声乐高级' ? 4 : 2;
 
 export default function App() {
   const fileInputRef = useRef(null);
@@ -85,7 +103,9 @@ export default function App() {
   const [filterTeacher, setFilterTeacher] = useState('全部');
   const [filterCourseStatus, setFilterCourseStatus] = useState('全部');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [newRecord, setNewRecord] = useState({ month: '3月', student: '', course: '', revenue: '', teacher: '', notes: '' });
+  const [filterCategory, setFilterCategory] = useState('全部');
+  const getCurrentMonth = () => `${new Date().getMonth() + 1}月`;
+  const [newRecord, setNewRecord] = useState({ month: getCurrentMonth(), student: '', course: '', revenue: '', teacher: '', notes: '', category: '乐器初级' });
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [alertMessage, setAlertMessage] = useState('');
 
@@ -128,18 +148,28 @@ export default function App() {
     return () => unsubscribe();
   }, [user]);
 
-  // 业务逻辑：计算提成
+  // 业务逻辑：计算提成 — 支持多阶段（声乐高级4阶段，其他2阶段）
   const processData = (rawData) => {
     return rawData.map(item => {
       const revenue = Number(item.revenue) || 0;
       const commissionPaid = Number(item.commissionPaid) || 0;
+      const category = item.category || detectCategory(item.course);
+      const maxStage = getMaxStage(category);
+      // 推导当前阶段：优先用 stage 字段，否则从 isFinished + commissionPaid 推算
+      let stage = item.stage;
+      if (stage === undefined || stage === null) {
+        const perStage = revenue * 0.4 / maxStage;
+        stage = item.isFinished ? maxStage : Math.max(1, Math.min(maxStage, Math.ceil(commissionPaid / perStage)));
+      }
+      stage = Math.max(1, Math.min(maxStage, stage));
       const totalCommissionTarget = revenue * 0.4;
-      const firstStageTarget = revenue * 0.2;
-      const currentEarned = item.isFinished ? totalCommissionTarget : firstStageTarget;
+      const stageAmount = totalCommissionTarget / maxStage;
+      const currentEarned = stage * stageAmount;
       const currentPending = Math.max(0, currentEarned - commissionPaid);
-      const futurePending = item.isFinished ? 0 : Math.max(0, totalCommissionTarget - Math.max(commissionPaid, firstStageTarget));
+      const futurePending = Math.max(0, totalCommissionTarget - Math.max(commissionPaid, currentEarned));
+      const isFinished = stage >= maxStage;
 
-      return { ...item, totalCommissionTarget, currentEarned, currentPending, futurePending };
+      return { ...item, category, maxStage, stage, stageAmount, totalCommissionTarget, currentEarned, currentPending, futurePending, isFinished };
     });
   };
 
@@ -153,10 +183,11 @@ export default function App() {
       const matchCourseStatus = filterCourseStatus === '全部' 
         ? true 
         : filterCourseStatus === '已结课' ? item.isFinished : !item.isFinished;
+      const matchCategory = filterCategory === '全部' || item.category === filterCategory;
 
-      return matchSearch && matchMonth && matchTeacher && matchCourseStatus;
+      return matchSearch && matchMonth && matchTeacher && matchCourseStatus && matchCategory;
     });
-  }, [processedData, searchTerm, filterMonth, filterTeacher, filterCourseStatus]);
+  }, [processedData, searchTerm, filterMonth, filterTeacher, filterCourseStatus, filterCategory]);
 
   const metrics = useMemo(() => {
     let totalRevenue = 0, totalCurrentPending = 0, totalFuturePending = 0, totalPaid = 0;
@@ -182,7 +213,21 @@ export default function App() {
 
   const handleToggleStatus = (id) => {
     const item = data.find(d => d.id === id);
-    if(item) updateCloudRecord(id, { isFinished: !item.isFinished });
+    if (!item) return;
+    const category = item.category || detectCategory(item.course);
+    const maxStage = getMaxStage(category);
+    let stage = item.stage;
+    if (stage === undefined || stage === null) {
+      const perStage = (Number(item.revenue) * 0.4) / maxStage;
+      stage = item.isFinished ? maxStage : Math.max(1, Math.min(maxStage, Math.ceil((Number(item.commissionPaid) || 0) / perStage)));
+    }
+    // 如果已结课（到达最大阶段），撤销到第一阶段；否则推进到下一阶段
+    if (stage >= maxStage) {
+      updateCloudRecord(id, { stage: 1, isFinished: false });
+    } else {
+      const nextStage = stage + 1;
+      updateCloudRecord(id, { stage: nextStage, isFinished: nextStage >= maxStage });
+    }
   };
 
   const handlePayPending = (id, amountToPay) => {
@@ -203,11 +248,12 @@ export default function App() {
       revenue: Number(newRecord.revenue),
       commissionPaid: 0,
       isFinished: false,
+      stage: 1,
       createdAt: Date.now()
     };
     
     setIsAddModalOpen(false);
-    setNewRecord({ month: '3月', student: '', course: '', revenue: '', teacher: '', notes: '' });
+    setNewRecord({ month: getCurrentMonth(), student: '', course: '', revenue: '', teacher: '', notes: '', category: '乐器初级' });
     
     const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'shanguyinyue_finances', newItemId);
     await setDoc(docRef, newItem);
@@ -253,7 +299,7 @@ export default function App() {
               ) : (
                 <span className="flex items-center text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded"><Cloud size={12} className="mr-1" /> 已接入实时云端数据库</span>
               )}
-              <span className="text-slate-500 text-xs">报名结算20% · 结课尾款20%</span>
+              <span className="text-slate-500 text-xs">声乐高级4阶段·其他2阶段 | 每阶段递增10%-20%提成</span>
             </div>
           </div>
           <div className="mt-4 md:mt-0 flex flex-wrap gap-2">
@@ -297,10 +343,10 @@ export default function App() {
           <div className="bg-slate-50 rounded-2xl p-5 shadow-sm border border-slate-200">
             <div className="flex items-center text-slate-500 mb-2">
               <GraduationCap size={18} className="mr-1 text-purple-500" />
-              <span className="text-sm font-medium">未来尾款预留</span>
+              <span className="text-sm font-medium">未来阶段预留</span>
             </div>
             <h2 className="text-2xl font-bold text-slate-600">¥{metrics.totalFuturePending.toLocaleString()}</h2>
-            <p className="text-xs text-slate-500 mt-1">结课后需支付的剩余20%</p>
+            <p className="text-xs text-slate-500 mt-1">后续阶段需支付的剩余提成</p>
           </div>
         </div>
 
@@ -320,10 +366,17 @@ export default function App() {
           <select className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none" value={filterTeacher} onChange={(e) => setFilterTeacher(e.target.value)}>
             {teachers.map(t => <option key={t} value={t}>{t === '全部' ? '所有老师' : `${t}老师`}</option>)}
           </select>
+          <select className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none" value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
+            <option value="全部">全部类别</option>
+            <option value="乐器初级">🎸 乐器初级</option>
+            <option value="乐器高级">🎸 乐器高级</option>
+            <option value="声乐初级">🎤 声乐初级</option>
+            <option value="声乐高级">🎤 声乐高级</option>
+          </select>
           <select className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none" value={filterCourseStatus} onChange={(e) => setFilterCourseStatus(e.target.value)}>
             <option value="全部">全部课程进度</option>
-            <option value="进行中">上课中 (仅结20%)</option>
-            <option value="已结课">已结课 (可结40%)</option>
+            <option value="进行中">进行中</option>
+            <option value="已结课">已结课</option>
           </select>
         </div>
 
@@ -357,26 +410,48 @@ export default function App() {
                   </tr>
                 )}
 
-                {filteredData.map((row) => (
+                {filteredData.map((row) => {
+                  const catColors = {
+                    '乐器初级': 'bg-sky-100 text-sky-700',
+                    '乐器高级': 'bg-indigo-100 text-indigo-700',
+                    '声乐初级': 'bg-pink-100 text-pink-700',
+                    '声乐高级': 'bg-rose-100 text-rose-700',
+                  };
+                  const stageLabel = row.maxStage === 4
+                    ? `阶段 ${row.stage}/4`
+                    : row.stage >= 2 ? '已结课' : '首期报名';
+                  const stageBadge = row.maxStage === 4
+                    ? (row.stage >= 4 ? 'bg-purple-100 text-purple-700' : 'bg-amber-100 text-amber-700')
+                    : (row.stage >= 2 ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700');
+                  const btnLabel = row.stage >= row.maxStage
+                    ? '撤销结课'
+                    : row.maxStage === 4
+                      ? `推进至第${row.stage + 1}阶段`
+                      : '标记结课';
+                  return (
                   <tr key={row.id} className="hover:bg-slate-50/50 transition-colors group">
                     <td className="px-4 py-4">
                       <div className="font-semibold text-slate-800">{row.student} <span className="text-xs font-normal text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded ml-1">{row.month}</span></div>
                       <div className="text-xs text-slate-500 mt-1">{row.course} · <span className="text-indigo-600 font-medium">{row.teacher}老师</span></div>
+                      <span className={`inline-block mt-1 px-1.5 py-0.5 rounded text-xs font-medium ${catColors[row.category] || 'bg-slate-100 text-slate-600'}`}>{row.category}</span>
                     </td>
                     <td className="px-4 py-4">
                       <div className="font-medium">¥{row.revenue}</div>
-                      <div className="text-xs text-slate-400 mt-1">总提¥{row.totalCommissionTarget}</div>
+                      <div className="text-xs text-slate-400 mt-1">总提¥{row.totalCommissionTarget} ({row.maxStage}阶段×¥{row.stageAmount})</div>
                     </td>
                     <td className="px-4 py-4">
-                      {row.isFinished ? (
-                        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-700">
-                          <CheckCircle size={12} className="mr-1" /> 已结课
+                      <div className="flex items-center space-x-2">
+                        <div className="w-full bg-slate-100 rounded-full h-2 max-w-[80px]">
+                          <div 
+                            className="h-2 rounded-full bg-indigo-500" 
+                            style={{ width: `${(row.stage / row.maxStage) * 100}%` }}
+                          ></div>
+                        </div>
+                        <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${stageBadge}`}>
+                          {row.stage >= row.maxStage && <CheckCircle size={12} className="mr-1" />}
+                          {stageLabel}
                         </span>
-                      ) : (
-                        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-700">
-                          进行中 (首期)
-                        </span>
-                      )}
+                      </div>
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center space-x-2">
@@ -401,9 +476,9 @@ export default function App() {
                     <td className="px-4 py-4 text-right space-x-2">
                       <button 
                         onClick={() => handleToggleStatus(row.id)}
-                        className={`px-2.5 py-1.5 rounded text-xs font-medium transition-colors border ${row.isFinished ? 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100' : 'bg-purple-50 text-purple-600 border-purple-200 hover:bg-purple-100'}`}
+                        className={`px-2.5 py-1.5 rounded text-xs font-medium transition-colors border ${row.stage >= row.maxStage ? 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100' : 'bg-purple-50 text-purple-600 border-purple-200 hover:bg-purple-100'}`}
                       >
-                        {row.isFinished ? '撤销结课' : '标记结课'}
+                        {btnLabel}
                       </button>
                       
                       {row.currentPending > 0 ? (
@@ -428,7 +503,7 @@ export default function App() {
                       </button>
                     </td>
                   </tr>
-                ))}
+                )})}
               </tbody>
             </table>
           </div>
@@ -453,6 +528,15 @@ export default function App() {
               <div>
                 <label className="block text-xs font-medium text-slate-500 mb-1">课程名称</label>
                 <input required className="w-full px-3 py-2 border rounded-lg text-sm" value={newRecord.course} onChange={e => setNewRecord({...newRecord, course: e.target.value})} placeholder="例: 钢琴初级" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-500 mb-1">课程类别</label>
+                <select className="w-full px-3 py-2 border rounded-lg text-sm bg-white" value={newRecord.category} onChange={e => setNewRecord({...newRecord, category: e.target.value})}>
+                  <option value="乐器初级">🎸 乐器初级</option>
+                  <option value="乐器高级">🎸 乐器高级</option>
+                  <option value="声乐初级">🎤 声乐初级</option>
+                  <option value="声乐高级">🎤 声乐高级</option>
+                </select>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
