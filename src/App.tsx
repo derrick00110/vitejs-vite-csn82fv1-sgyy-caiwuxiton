@@ -6,6 +6,7 @@ import { Search, Filter, DollarSign, Download, Upload, Plus, Trash2, CheckCircle
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { blankBillDraft, formatPeriod, makePeriodKey, MONTH_LABELS, normalizeMonthLabel, resolveBillYear, yearChoices, yearForHistoricalSeed } from './billPeriod.ts';
 
 const myFirebaseConfig = {
   apiKey: "AIzaSyD525Z346nu8-g9t8b3yyn8udsk0619Lwg",
@@ -104,8 +105,8 @@ export default function App() {
   const [filterCourseStatus, setFilterCourseStatus] = useState('全部');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [filterCategory, setFilterCategory] = useState('全部');
-  const getCurrentMonth = () => `${new Date().getMonth() + 1}月`;
-  const [newRecord, setNewRecord] = useState({ month: getCurrentMonth(), student: '', course: '', revenue: '', teacher: '', notes: '', category: '乐器初级' });
+  const [newRecord, setNewRecord] = useState(() => blankBillDraft());
+  const [editingPeriod, setEditingPeriod] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [alertMessage, setAlertMessage] = useState('');
 
@@ -168,17 +169,30 @@ export default function App() {
       const currentPending = Math.max(0, currentEarned - commissionPaid);
       const futurePending = Math.max(0, totalCommissionTarget - Math.max(commissionPaid, currentEarned));
       const isFinished = stage >= maxStage;
+      const billYear = resolveBillYear(item);
+      const periodKey = makePeriodKey(billYear, item.month);
+      const periodLabel = formatPeriod(billYear, item.month);
 
-      return { ...item, category, maxStage, stage, stageAmount, totalCommissionTarget, currentEarned, currentPending, futurePending, isFinished };
+      return { ...item, category, maxStage, stage, stageAmount, totalCommissionTarget, currentEarned, currentPending, futurePending, isFinished, billYear, periodKey, periodLabel };
     });
   };
 
   const processedData = useMemo(() => processData(data), [data]);
 
+  const periodFilters = useMemo(() => {
+    const labels = new Map();
+    processedData.forEach((item) => {
+      if (!labels.has(item.periodKey)) labels.set(item.periodKey, item.periodLabel);
+    });
+    return [...labels.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([key, label]) => ({ key, label }));
+  }, [processedData]);
+
   const filteredData = useMemo(() => {
     return processedData.filter(item => {
       const matchSearch = item.student.includes(searchTerm) || item.course.includes(searchTerm);
-      const matchMonth = filterMonth === '全部' || item.month === filterMonth;
+      const matchMonth = filterMonth === '全部' || item.periodKey === filterMonth;
       const matchTeacher = filterTeacher === '全部' || item.teacher === filterTeacher;
       const matchCourseStatus = filterCourseStatus === '全部' 
         ? true 
@@ -245,6 +259,8 @@ export default function App() {
     const newItem = {
       ...newRecord,
       id: newItemId,
+      year: Number(newRecord.year),
+      month: normalizeMonthLabel(newRecord.month),
       revenue: Number(newRecord.revenue),
       commissionPaid: 0,
       isFinished: false,
@@ -253,10 +269,25 @@ export default function App() {
     };
     
     setIsAddModalOpen(false);
-    setNewRecord({ month: getCurrentMonth(), student: '', course: '', revenue: '', teacher: '', notes: '', category: '乐器初级' });
+    setNewRecord(blankBillDraft());
     
     const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'shanguyinyue_finances', newItemId);
     await setDoc(docRef, newItem);
+  };
+
+  const handleEditPeriodSubmit = async (e) => {
+    e.preventDefault();
+    if (!editingPeriod) return;
+    const monthLabel = normalizeMonthLabel(editingPeriod.month);
+    if (!monthLabel) {
+      setAlertMessage('请选择月份');
+      return;
+    }
+    await updateCloudRecord(editingPeriod.id, {
+      year: Number(editingPeriod.year),
+      month: monthLabel,
+    });
+    setEditingPeriod(null);
   };
 
   const handleDelete = (id) => setDeleteConfirmId(id);
@@ -275,7 +306,14 @@ export default function App() {
       let baseTime = Date.now() - 100000; 
       for (const item of defaultData) {
         const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'shanguyinyue_finances', item.id);
-        await setDoc(docRef, { ...item, createdAt: baseTime + parseInt(item.id) });
+        const createdAt = baseTime + parseInt(item.id);
+        await setDoc(docRef, {
+          ...item,
+          createdAt,
+          // 种子账的 10/11/12 月发生在导入日之前，年份按 2025 写入；1 月、3 月按 2026。
+          year: yearForHistoricalSeed(item.month),
+          month: normalizeMonthLabel(item.month),
+        });
       }
       setAlertMessage('旧账本同步成功！以后您可以和合伙人实时协同了！');
     } catch(e) {
@@ -283,8 +321,9 @@ export default function App() {
     }
   };
 
-  const months = ['全部', ...new Set(data.map(item => item.month))];
   const teachers = ['全部', ...new Set(data.map(item => item.teacher))];
+  const addYearOptions = yearChoices(newRecord.year);
+  const editYearOptions = yearChoices(editingPeriod?.year);
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans text-slate-800">
@@ -313,7 +352,7 @@ export default function App() {
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
             <div className="flex items-center text-slate-500 mb-2">
               <DollarSign size={18} className="mr-1 text-emerald-500" />
-              <span className="text-sm font-medium">总收学费 (当前筛选)</span>
+              <span className="text-sm font-medium">总收学费 ({filterMonth === '全部' ? '当前筛选' : (periodFilters.find(period => period.key === filterMonth)?.label || '当前筛选')})</span>
             </div>
             <h2 className="text-2xl font-bold text-slate-800">¥{metrics.totalRevenue.toLocaleString()}</h2>
           </div>
@@ -361,7 +400,8 @@ export default function App() {
             />
           </div>
           <select className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none" value={filterMonth} onChange={(e) => setFilterMonth(e.target.value)}>
-            {months.map(m => <option key={m} value={m}>{m === '全部' ? '全部月份' : m}</option>)}
+            <option value="全部">全部月份</option>
+            {periodFilters.map(period => <option key={period.key} value={period.key}>{period.label}</option>)}
           </select>
           <select className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none" value={filterTeacher} onChange={(e) => setFilterTeacher(e.target.value)}>
             {teachers.map(t => <option key={t} value={t}>{t === '全部' ? '所有老师' : `${t}老师`}</option>)}
@@ -431,7 +471,7 @@ export default function App() {
                   return (
                   <tr key={row.id} className="hover:bg-slate-50/50 transition-colors group">
                     <td className="px-4 py-4">
-                      <div className="font-semibold text-slate-800">{row.student} <span className="text-xs font-normal text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded ml-1">{row.month}</span></div>
+                      <div className="font-semibold text-slate-800">{row.student} <span className="text-xs font-normal text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded ml-1">{row.periodLabel}</span></div>
                       <div className="text-xs text-slate-500 mt-1">{row.course} · <span className="text-indigo-600 font-medium">{row.teacher}老师</span></div>
                       <span className={`inline-block mt-1 px-1.5 py-0.5 rounded text-xs font-medium ${catColors[row.category] || 'bg-slate-100 text-slate-600'}`}>{row.category}</span>
                     </td>
@@ -474,6 +514,12 @@ export default function App() {
                       )}
                     </td>
                     <td className="px-4 py-4 text-right space-x-2">
+                      <button
+                        onClick={() => setEditingPeriod({ id: row.id, year: row.billYear, month: normalizeMonthLabel(row.month) || MONTH_LABELS[0] })}
+                        className="px-2.5 py-1.5 rounded text-xs font-medium transition-colors border bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+                      >
+                        改月份
+                      </button>
                       <button 
                         onClick={() => handleToggleStatus(row.id)}
                         className={`px-2.5 py-1.5 rounded text-xs font-medium transition-colors border ${row.stage >= row.maxStage ? 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100' : 'bg-purple-50 text-purple-600 border-purple-200 hover:bg-purple-100'}`}
@@ -517,13 +563,21 @@ export default function App() {
             <form onSubmit={handleAddSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-500 mb-1">月份</label>
-                  <input required className="w-full px-3 py-2 border rounded-lg text-sm" value={newRecord.month} onChange={e => setNewRecord({...newRecord, month: e.target.value})} placeholder="例: 4月" />
+                  <label className="block text-xs font-medium text-slate-500 mb-1">年份</label>
+                  <select required className="w-full px-3 py-2 border rounded-lg text-sm bg-white" value={newRecord.year} onChange={e => setNewRecord({...newRecord, year: Number(e.target.value)})}>
+                    {addYearOptions.map(year => <option key={year} value={year}>{year}年</option>)}
+                  </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-500 mb-1">学生姓名</label>
-                  <input required className="w-full px-3 py-2 border rounded-lg text-sm" value={newRecord.student} onChange={e => setNewRecord({...newRecord, student: e.target.value})} placeholder="输入姓名" />
+                  <label className="block text-xs font-medium text-slate-500 mb-1">月份</label>
+                  <select required className="w-full px-3 py-2 border rounded-lg text-sm bg-white" value={normalizeMonthLabel(newRecord.month)} onChange={e => setNewRecord({...newRecord, month: e.target.value})}>
+                    {MONTH_LABELS.map(month => <option key={month} value={month}>{month}</option>)}
+                  </select>
                 </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-500 mb-1">学生姓名</label>
+                <input required className="w-full px-3 py-2 border rounded-lg text-sm" value={newRecord.student} onChange={e => setNewRecord({...newRecord, student: e.target.value})} placeholder="输入姓名" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-500 mb-1">课程名称</label>
@@ -555,6 +609,35 @@ export default function App() {
               <div className="flex justify-end space-x-3 pt-4">
                 <button type="button" onClick={() => setIsAddModalOpen(false)} className="px-4 py-2 text-slate-500 hover:bg-slate-100 rounded-lg text-sm font-medium">取消</button>
                 <button type="submit" className="px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 rounded-lg text-sm font-medium">存入云端数据库</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {editingPeriod && (
+        <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
+            <h3 className="text-lg font-bold text-slate-800 mb-4">修改账单月份</h3>
+            <form onSubmit={handleEditPeriodSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">年份</label>
+                  <select required className="w-full px-3 py-2 border rounded-lg text-sm bg-white" value={editingPeriod.year} onChange={e => setEditingPeriod({...editingPeriod, year: Number(e.target.value)})}>
+                    {editYearOptions.map(year => <option key={year} value={year}>{year}年</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">月份</label>
+                  <select required className="w-full px-3 py-2 border rounded-lg text-sm bg-white" value={editingPeriod.month} onChange={e => setEditingPeriod({...editingPeriod, month: e.target.value})}>
+                    {MONTH_LABELS.map(month => <option key={month} value={month}>{month}</option>)}
+                  </select>
+                </div>
+              </div>
+              <p className="text-xs text-slate-500">将显示为「{formatPeriod(editingPeriod.year, editingPeriod.month)}」。</p>
+              <div className="flex justify-end space-x-3 pt-2">
+                <button type="button" onClick={() => setEditingPeriod(null)} className="px-4 py-2 text-slate-500 hover:bg-slate-100 rounded-lg text-sm font-medium">取消</button>
+                <button type="submit" className="px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 rounded-lg text-sm font-medium">保存月份</button>
               </div>
             </form>
           </div>
